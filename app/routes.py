@@ -1,5 +1,4 @@
-from urllib import request
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify,make_response,request
 from app.models.planet import Planet
 from app import db 
 
@@ -25,16 +24,16 @@ def get_all_planets():
     for planet in all_planet:
         planet_dict = {"id": planet.id,
                         "name": planet.name,
-                        "description": planet.decsription,
+                        "description": planet.description,
                         "color": planet.color}
         result.append(planet_dict)
     return jsonify(result), 200
 
-planet_bp = Blueprint("planets", __name__, url_prefix = "/planets")
+#planet_bp = Blueprint("planets", __name__, url_prefix = "/planets")
 @planet_bp.route("", methods = ["POST"])
 
 def update_one_planet():
-    request_body = request.get_jason()
+    request_body = request.get_json()
 
     new_planet = Planet(
         name = request_body['name'],
@@ -44,7 +43,7 @@ def update_one_planet():
 
     db.session.add(new_planet)
     db.session.commit()
-    return jsonify({"msg": f"Successfully created Planet named {new_planet.name}"}), 201
+    return make_response({"msg": f"Successfully created Planet named {new_planet.name}"}), 201
 
 #WAVE TWO 
 
