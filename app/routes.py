@@ -5,6 +5,7 @@ from app.models.planet import Planet
 from app import db 
 
 
+
 planet_bp = Blueprint("planets", __name__, url_prefix = "/planets")
 
 @planet_bp.route("", methods=['POST'])
@@ -21,20 +22,14 @@ def create_one_planet():
 
 @planet_bp.route("", methods = ['GET'])
 def get_all_planets():
-    
-    name_query_value = request.args.get("name")
-    color_query_value = request.args.get("color")
-
-    if name_query_value:
-        planets = Planet.query.filter_by(name=name_query_value)
-    elif color_query_value:
-        planets = Planet.query.filter_by(color=color_query_value)
-    else:
-        planets = Planet.query.all()
-    
+    name_query_value = request.args.get('name')
     result = []
-    
-    for planet in planets:
+    if name_query_value:
+        all_planet = Planet.query.filter_by(name = name_query_value)
+    else: 
+        all_planet = Planet.query.all()
+        
+    for planet in all_planet:
         result.append(planet.to_dict())
     return jsonify(result), 200
 
