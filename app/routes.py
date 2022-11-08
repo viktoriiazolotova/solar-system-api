@@ -1,4 +1,5 @@
-import re
+from os import name
+
 from flask import Blueprint, jsonify, make_response, request, abort
 from app.models.planet import Planet
 from app import db 
@@ -20,9 +21,20 @@ def create_one_planet():
 
 @planet_bp.route("", methods = ['GET'])
 def get_all_planets():
+    
+    name_query_value = request.args.get("name")
+    color_query_value = request.args.get("color")
+
+    if name_query_value:
+        planets = Planet.query.filter_by(name=name_query_value)
+    elif color_query_value:
+        planets = Planet.query.filter_by(color=color_query_value)
+    else:
+        planets = Planet.query.all()
+    
     result = []
-    all_planet = Planet.query.all()
-    for planet in all_planet:
+    
+    for planet in planets:
         result.append(planet.to_dict())
     return jsonify(result), 200
 
@@ -35,14 +47,18 @@ def get_one_planet(planet_id):
 def update_one_planet(planet_id):
     update_planet = get_planet_from_id(planet_id)
     request_body = request.get_json()
+    list_keys = ["name", "color", "description"]
+    str_response = ""
     try:
         update_planet.name = request_body["name"]
         update_planet.description = request_body["description"]
         update_planet.color = request_body["color"]
     except KeyError:
-        # if request_body["color"] is None:
-        #     return jsonify({"msg": "Missing needed color input"}), 400
-        return jsonify({"msg": "Missing needed data"}), 400
+        for key in list_keys:
+            if key not in request_body:
+                str_response += key + ", "
+        
+        return jsonify({"msg": f"Missing needed {str_response.strip()}"}), 400
     db.session.commit()
     return jsonify({"msg": f"Successfully updated planet with id {update_planet.id}"}), 200
 
